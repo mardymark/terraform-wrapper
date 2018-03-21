@@ -1,0 +1,52 @@
+#!/bin/bash
+
+set -e
+
+if [[ "$1" == "install" ]]; then
+  if [[ "$2" == "" ]]; then
+    echo "terraform version not specified!"
+    exit 1
+  fi
+  if [[ -f "/usr/local/bin/terraform_$2/terraform" ]]; then
+    echo "terraform version already installed!"
+    exit 0
+  fi
+  curl -O https://releases.hashicorp.com/terraform/$2/terraform_$2_$(uname -s | tr '[:upper:]' '[:lower:]')_amd64.zip
+  sudo unzip terraform_$2_$(uname -s | tr '[:upper:]' '[:lower:]')_amd64.zip -d "/usr/local/bin/terraform_$2"
+  rm terraform_$2_$(uname -s | tr '[:upper:]' '[:lower:]')_amd64.zip
+  echo "terraform v$2 installed"
+  exit 0
+fi
+
+if [[ "$1" == "versions" ]]; then
+  terraform_versions=($(find "/usr/local/bin" -name "terraform_$terraform_version*" -type d -exec basename '{}' \;))
+  for version in "${terraform_versions[@]}";
+    do
+      echo $version
+  done
+  exit 0
+fi
+
+terraform_version=${TERRAFORM_VERSION:-'0.11.3'}
+if [[ -f "$(pwd)/.terraform_version" ]]; then
+  terraform_version=$(cat .terraform_version)
+  echo "terraform version overriden by file"
+fi
+
+if [[ "$terraform_version" == "" ]]; then
+  echo "terraform version has not been set by environment variable (TERRAFORM_VERSION) or file (.terraform_version)"
+  exit 1
+fi
+
+if [ ! -d "/usr/local/bin/terraform_$terraform_version" ]; then
+  echo "terraform v$terraform_version has not been installed. Install using: terraform install $terraform_version"
+  exit 1
+fi
+
+terraform_versions=($(find "/usr/local/bin" -name "terraform_$terraform_version*" -type d -exec basename '{}' \;))
+terraform_version="${terraform_versions[@]:(-1)}"
+terraform_path="/usr/local/bin/$terraform_version/terraform"
+
+echo "Using $terraform_version"
+
+$terraform_path $@
