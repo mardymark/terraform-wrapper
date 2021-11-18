@@ -27,10 +27,10 @@ if [[ "$1" == "versions" ]]; then
   exit 0
 fi
 
-terraform_version=${TERRAFORM_VERSION:-'0.11.3'}
+terraform_version=${TERRAFORM_VERSION:-'1.0.11'}
 if [[ -f "$(pwd)/.terraform_version" ]]; then
   terraform_version=$(cat .terraform_version)
-  echo "terraform version overriden by file"
+  # echo "terraform version overriden by file"
 fi
 
 if [[ "$terraform_version" == "" ]]; then
@@ -47,6 +47,6 @@ terraform_versions=($(find "/usr/local/bin" -name "terraform_$terraform_version*
 terraform_version="${terraform_versions[@]:(-1)}"
 terraform_path="/usr/local/bin/$terraform_version/terraform"
 
-echo "Using $terraform_version"
+# echo "Using $terraform_version"
 
 $terraform_path $@
